@@ -98,7 +98,9 @@ void startUpdateServer()
 // return the about page as HTML.
 void handleAbout()
 {
-    String aboutResponse = "<body style=\"background-color:#3498db;color:#ffffff;font-family:arial\"><b>[About ESP32]</b><br><br>";
+    String aboutResponse;
+    aboutResponse.reserve(1024);
+    aboutResponse = "<body style=\"background-color:#3498db;color:#ffffff;font-family:arial\"><b>[About ESP32]</b><br><br>";
     aboutResponse += "Device Family: " + deviceFamily + "<br>";
     aboutResponse += "ESP Chip Model: " + String(ESP.getChipModel()) + "<br>";
     aboutResponse += "CPU Frequency: " + String(ESP.getCpuFreqMHz()) + "<br>";
@@ -115,7 +117,6 @@ void handleAbout()
     aboutResponse += "&nbsp;&nbsp;<button onclick=\"window.location.href='/update'\">Update</button></body>";
     httpServer.send(200, "text/html", aboutResponse);
     httpServer.sendHeader("Connection", "close");
-    aboutResponse.clear();
 }
 
 // update.html must have previously been uploaded to the SPIFFs partition via Arduino IDE
