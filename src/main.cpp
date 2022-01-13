@@ -28,11 +28,14 @@
             
   Config:    You must update secrets.h with your WiFi credentials
              and the hostname you choose for this device.
+             SPIFFs for HTML requires update.html to be uploaded first.
+             https://github.com/me-no-dev/arduino-esp32fs-plugin/releases/
 
   Kary Wall 1/20/2022.
 ===================================================================+*/
 
 #include <Arduino.h>
+#include "SPIFFS.h"
 #include <localWiFi.h> 
 #include <localUpdateServer.h>
 
@@ -50,7 +53,13 @@ void setup()
     Serial.println("Booting up...");
     pinMode(LED_BUILTIN, OUTPUT);
     digitalWrite(LED_BUILTIN, LOW);
-    
+
+    // SPIFFs support
+    if(!SPIFFS.begin(true)){
+        Serial.println("An Error has occurred while mounting SPIFFS");
+        return;
+    }
+        
     /*--------------------------------------------------------------------
      Start WiFi & OTA HTTP update server
     ---------------------------------------------------------------------*/

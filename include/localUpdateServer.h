@@ -19,37 +19,34 @@ extern String softwareVersion; // used for auto OTA updates & about page.
 extern String deviceFamily;    // used for auto OTA updates & about page.
 extern String description;     // used for about page.
 extern String globalIP;        // needed for about page.
-extern String style;           // css string for web pages.
-extern String loginIndex;      // html string for login page (not used, need to remove).
-extern String serverIndex;     // html string for update page.
 
 WebServer httpServer(80);
 
 // Prototypes
 void handleAbout();
+String getUpdateHTML();
 
 // Start the server
 void startUpdateServer()
 {
-
     Serial.println("mDNS responder started");
-    /* return index page which is stored in serverIndex */
+
+    // handlers for url paths
     httpServer.on("/", HTTP_GET, []()
                   { handleAbout(); });
     httpServer.on("/about", handleAbout);
-    httpServer.on("/serverIndex", HTTP_GET, []()
+    httpServer.on("/update", HTTP_GET, []()
                   {
                       httpServer.sendHeader("Connection", "close");
-                      httpServer.send(200, "text/html", serverIndex);
+                      httpServer.send(200, "text/html", getUpdateHTML());
                   });
-    
-    httpServer.on( /* If there is a file, upload it, if a GET redirect to upload firmware page */
+    httpServer.on(
         "/update", HTTP_ANY, []()
         {
             if (httpServer.method() == HTTP_GET)
             {
                 httpServer.sendHeader("Connection", "close");
-                httpServer.send(200, "text/html", serverIndex);
+                httpServer.send(200, "text/html", getUpdateHTML());
             }
             else if (httpServer.method() == HTTP_POST)
             {
@@ -58,7 +55,8 @@ void startUpdateServer()
                 delay(5000);
                 ESP.restart();
             }
-            else{
+            else
+            {
                 httpServer.sendHeader("Connection", "close");
                 httpServer.send(200, "text/html", "Option not allowed.");
             }
@@ -115,7 +113,27 @@ void handleAbout()
     aboutResponse += "Description: " + description + "<br>";
     aboutResponse += "Update: http://" + hostName + ".ra.local/update<br><br>";
     aboutResponse += "<button onclick=\"window.location.href='/restart'\">Restart</button></body>";
-    aboutResponse += "&nbsp;&nbsp;<button onclick=\"window.location.href='/serverIndex'\">Update</button></body>";
+    aboutResponse += "&nbsp;&nbsp;<button onclick=\"window.location.href='/update'\">Update</button></body>";
     httpServer.send(200, "text/html", aboutResponse);
     aboutResponse.clear();
+}
+
+// update.html must have previously been uploaded to the SPIFFs partition via Arduino IDE
+// before uploading this sketch. This is only needed once per device.
+String getUpdateHTML()
+{
+    String updateHTML = "";
+    File file = SPIFFS.open("/update.html");
+    if (!file)
+    {
+        updateHTML = "Failed to open /update.html for reading. Update.html must be uploaded to SPIFFs partition before uploading this sketch.";
+        Serial.println(updateHTML);
+        return updateHTML;
+    }
+    if (file.available())
+    {
+        updateHTML += file.readString();
+    }
+    file.close();
+    return updateHTML;
 }
