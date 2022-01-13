@@ -126,11 +126,10 @@ String getUpdateHTML()
     File file = SPIFFS.open("/update.html");
     if (file && file.available() && file.size() > 0)
     {
-        updateHTML += file.readString();
+        updateHTML = file.readString();
     }
     else
     {
-        updateHTML += file.readString();
         updateHTML = "Failed to open /update.html for reading. Update.html must be uploaded to SPIFFs partition before uploading this sketch.";
         Serial.println(updateHTML);
     }
