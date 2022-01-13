@@ -24,6 +24,7 @@ WebServer httpServer(80);
 
 // Prototypes
 void handleAbout();
+void bangLED(int);
 String getUpdateHTML();
 
 // Start the server
@@ -35,14 +36,10 @@ void startUpdateServer()
     httpServer.on("/", HTTP_GET, []()
                   { handleAbout(); });
     httpServer.on("/about", handleAbout);
-    httpServer.on("/update", HTTP_GET, []()
-                  {
-                      httpServer.sendHeader("Connection", "close");
-                      httpServer.send(200, "text/html", getUpdateHTML());
-                  });
     httpServer.on(
         "/update", HTTP_ANY, []()
         {
+            bangLED(HIGH);
             if (httpServer.method() == HTTP_GET)
             {
                 httpServer.sendHeader("Connection", "close");
@@ -60,6 +57,8 @@ void startUpdateServer()
                 httpServer.sendHeader("Connection", "close");
                 httpServer.send(200, "text/html", "Option not allowed.");
             }
+            digitalWrite(LED_BUILTIN, LOW);
+            bangLED(LOW);
         },
         []()
         {
@@ -115,6 +114,7 @@ void handleAbout()
     aboutResponse += "<button onclick=\"window.location.href='/restart'\">Restart</button></body>";
     aboutResponse += "&nbsp;&nbsp;<button onclick=\"window.location.href='/update'\">Update</button></body>";
     httpServer.send(200, "text/html", aboutResponse);
+    httpServer.sendHeader("Connection", "close");
     aboutResponse.clear();
 }
 
@@ -124,16 +124,28 @@ String getUpdateHTML()
 {
     String updateHTML = "";
     File file = SPIFFS.open("/update.html");
-    if (!file)
-    {
-        updateHTML = "Failed to open /update.html for reading. Update.html must be uploaded to SPIFFs partition before uploading this sketch.";
-        Serial.println(updateHTML);
-        return updateHTML;
-    }
-    if (file.available())
+    if (file && file.available() && file.size() > 0)
     {
         updateHTML += file.readString();
     }
+    else
+    {
+        updateHTML += file.readString();
+        updateHTML = "Failed to open /update.html for reading. Update.html must be uploaded to SPIFFs partition before uploading this sketch.";
+        Serial.println(updateHTML);
+    }
     file.close();
     return updateHTML;
+}
+
+void bangLED(int state)
+{
+    if (state == HIGH)
+    {
+        digitalWrite(LED_BUILTIN, HIGH);
+    }
+    else
+    {
+        digitalWrite(LED_BUILTIN, LOW);
+    }
 }
