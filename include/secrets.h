@@ -22,8 +22,8 @@
 #include <Arduino.h>
 
 #ifndef STASSID
-#define STASSID "YOURSSID"
-#define STAPSK  "YOURPASSWORD"
+#define STASSID "IOTNET2G"
+#define STAPSK  "creekvalley124"
 #endif
 
 String ssid = STASSID;                                             // WiFi ssid

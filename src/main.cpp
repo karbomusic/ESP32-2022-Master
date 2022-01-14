@@ -43,6 +43,8 @@ extern WebServer httpServer;
 extern void startWifi();
 extern void startUpdateServer();
 
+const int activityLED = 12;
+
 void setup()
 {
     /*--------------------------------------------------------------------
@@ -51,8 +53,8 @@ void setup()
     Serial.begin(115200);
     Serial.println();
     Serial.println("Booting up...");
-    pinMode(LED_BUILTIN, OUTPUT);
-    digitalWrite(LED_BUILTIN, LOW);
+    pinMode(activityLED, OUTPUT);
+    digitalWrite(activityLED, LOW);
 
     // SPIFFs support
     if(!SPIFFS.begin(true)){
@@ -77,7 +79,7 @@ void loop()
      Project specific loop code
     ---------------------------------------------------------------------*/
 
-
+    
     /*--------------------------------------------------------------------
      Required for web server and OTA updates
     ---------------------------------------------------------------------*/

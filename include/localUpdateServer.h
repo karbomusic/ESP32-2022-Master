@@ -12,19 +12,22 @@
 #include <strings.h>
 
 // externs
-extern String ssid;            // WiFi ssid.
-extern String password;        // WiFi password.
-extern String hostName;        // hostname as seen on network.
-extern String softwareVersion; // used for auto OTA updates & about page.
-extern String deviceFamily;    // used for auto OTA updates & about page.
-extern String description;     // used for about page.
-extern String globalIP;        // needed for about page.
+extern String ssid;                  // WiFi ssid.
+extern String password;              // WiFi password.
+extern String hostName;              // hostname as seen on network.
+extern String softwareVersion;       // used for auto OTA updates & about page.
+extern String deviceFamily;          // used for auto OTA updates & about page.
+extern String description;           // used for about page.
+extern String globalIP;              // needed for about page.
+extern const String metaRedirect;    // needed for restart redirect.
+extern const int activityLED;
 
 WebServer httpServer(80);
 
 // Prototypes
 void handleAbout();
 void bangLED(int);
+void handleRestart();
 String getUpdateHTML();
 
 // Start the server
@@ -36,6 +39,7 @@ void startUpdateServer()
     httpServer.on("/", HTTP_GET, []()
                   { handleAbout(); });
     httpServer.on("/about", handleAbout);
+    httpServer.on("/restart", handleRestart);
     httpServer.on(
         "/update", HTTP_ANY, []()
         {
@@ -62,6 +66,7 @@ void startUpdateServer()
         },
         []()
         {
+            bangLED(HIGH);
             HTTPUpload &upload = httpServer.upload();
             if (upload.status == UPLOAD_FILE_START)
             {
@@ -90,6 +95,7 @@ void startUpdateServer()
                     Update.printError(Serial);
                 }
             }
+            bangLED(LOW);
         });
     httpServer.begin();
     Serial.println("HTTP server started! Open your browser and go to http://" + globalIP + "/about");
@@ -98,25 +104,28 @@ void startUpdateServer()
 // return the about page as HTML.
 void handleAbout()
 {
+    bangLED(HIGH);
     String aboutResponse;
     aboutResponse.reserve(1024);
     aboutResponse = "<body style=\"background-color:#3498db;color:#ffffff;font-family:arial\"><b>[About ESP32]</b><br><br>";
-    aboutResponse += "Device Family: " + deviceFamily + "<br>";
-    aboutResponse += "ESP Chip Model: " + String(ESP.getChipModel()) + "<br>";
-    aboutResponse += "CPU Frequency: " + String(ESP.getCpuFreqMHz()) + "<br>";
-    aboutResponse += "Free Heap Mem: " + String(ESP.getFreeHeap()) + "<br>";
-    aboutResponse += "Flash Mem Size: " + String(ESP.getFlashChipSize() / 1024 / 1024) + " MB<br>";
-    aboutResponse += "Hostname: " + hostName + "<br>";
-    aboutResponse += "IPAddress: " + globalIP + "<br>";
-    aboutResponse += "MAC Address: " + String(WiFi.macAddress()) + "<br>";
-    aboutResponse += "Software Version: " + softwareVersion + "<br>";
-    aboutResponse += "SSID: " + ssid + "<br>";
-    aboutResponse += "Description: " + description + "<br>";
-    aboutResponse += "Update: http://" + hostName + ".ra.local/update<br><br>";
+    aboutResponse += "<b>Device Family:</b> " + deviceFamily + "<br>";
+    aboutResponse += "<b>ESP Chip Model:</b> " + String(ESP.getChipModel()) + "<br>";
+    aboutResponse += "<b>CPU Frequency:</b> " + String(ESP.getCpuFreqMHz()) + "<br>";
+    aboutResponse += "<b>Free Heap Mem:</b> " + String(ESP.getFreeHeap()) + "<br>";
+    aboutResponse += "<b>Flash Mem Size:</b> " + String(ESP.getFlashChipSize() / 1024 / 1024) + " MB<br>";
+    aboutResponse += "<b>Hostname:</b> " + hostName + "<br>";
+    aboutResponse += "<b>IPAddress:</b> " + globalIP + "<br>";
+    aboutResponse += "<b>MAC Address:</b> " + String(WiFi.macAddress()) + "<br>";
+    aboutResponse += "<b>Software Version:</b> " + softwareVersion + "<br>";
+    aboutResponse += "<b>SSID:</b> " + ssid + "<br>";
+    aboutResponse += "<b>Description:</b> " + description + "<br>";
+    aboutResponse += "<b>Uptime:</b> " + String(millis()/1000/60) + " minutes<br>";
+    aboutResponse += "<b>Update:</b> http://" + hostName + ".ra.local/update<br><br>";
     aboutResponse += "<button onclick=\"window.location.href='/restart'\">Restart</button></body>";
     aboutResponse += "&nbsp;&nbsp;<button onclick=\"window.location.href='/update'\">Update</button></body>";
     httpServer.send(200, "text/html", aboutResponse);
     httpServer.sendHeader("Connection", "close");
+    bangLED(LOW);
 }
 
 // update.html must have previously been uploaded to the SPIFFs partition via Arduino IDE
@@ -138,14 +147,15 @@ String getUpdateHTML()
     return updateHTML;
 }
 
+void handleRestart()
+{
+    Serial.println("Restarting in 5 seconds...");
+    httpServer.send(200, "text/html", metaRedirect);
+    delay(5000);
+    ESP.restart();
+}
+
 void bangLED(int state)
 {
-    if (state == HIGH)
-    {
-        digitalWrite(LED_BUILTIN, HIGH);
-    }
-    else
-    {
-        digitalWrite(LED_BUILTIN, LOW);
-    }
+    digitalWrite(activityLED, state);
 }
