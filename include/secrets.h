@@ -11,10 +11,7 @@
              with identical firmware you can use the same for all.
 
              It wouldn't be a bad idea to combine these strings as the
-             filename: mydevice-12.10.21.bin. This would allow the 
-             server to match mydevice-12.10.21.bin to a file on the 
-             server named mydevice-12.22.21.bin. Assuming you are
-             using automatic updates, since manual is kind of better.
+             filename: mydevice-12.10.21.bin to make comparisons easier.
 
   Kary Wall 1/20/2022.            
 ===================================================================+*/
@@ -22,8 +19,8 @@
 #include <Arduino.h>
 
 #ifndef STASSID
-#define STASSID "IOTNET2G"
-#define STAPSK  "creekvalley124"
+#define STASSID "YOURSSID"
+#define STAPSK  "YOURPASSWORD"
 #endif
 
 String ssid = STASSID;                                             // WiFi ssid
