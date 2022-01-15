@@ -71,3 +71,14 @@ void startWifi()
         }
     }
 }
+
+bool isWiFiConnected(){
+    if(WiFi.status() == WL_CONNECTED)
+    {
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+}
