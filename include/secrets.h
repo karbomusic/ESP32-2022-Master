@@ -25,7 +25,7 @@
 
 String ssid = STASSID;                                             // WiFi ssid
 String password = STAPSK;                                          // WiFi password
-String hostName = "ESP32-Test";                                    // hostname as seen on network
+String hostName = "ESP-Antenna";                                   // hostname as seen on network
 String softwareVersion = "1.12.22";                                // used for OTA updates & about page
 String deviceFamily = "ESP32-Test-Device";                         // used for OTA updates & about page
 String description = "I'm a test device for ESP32 Template";       // used for about page

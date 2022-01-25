@@ -13,21 +13,9 @@
   Summary:   Project template that includes plubming and code for 
              a WiFi client + OTA updates via manual update.
              Automatic updates are not yet implemented but
-             may be ported over from my legacy projects.
+             may be ported over from legacy projects.
 
              Architecture: ESP32 specific.
-
-  Dependencies:
-
-             <localWifi.h> 
-                -- <WiFi.h>
-                -- <WiFiClient.h>
-                -- <ESPmDNS.h>  
-                -- <secrets.h>            
-             <localUPdateServer.h>
-                -- <WebServer.h>
-                -- <Update.h>
-                -- <strings.h>
             
   Config:    You must update secrets.h with your WiFi credentials
              and the hostname you choose for this device.
@@ -50,6 +38,7 @@
 
 #include <Arduino.h>
 #include "SPIFFS.h"
+#include <zUtils.h>
 #include <localWiFi.h>
 #include <localUpdateServer.h>
 
@@ -91,7 +80,7 @@ void setup()
     g_OLED.begin();
     g_OLED.clear();
     g_OLED.setFont(u8g2_font_profont15_tf);
-    g_lineHeight = g_OLED.getFontAscent() - g_OLED.getFontDescent(); // Descent is a negative number so we add it to the total
+    g_lineHeight = g_OLED.getFontAscent() - g_OLED.getFontDescent(); 
     g_OLED.clearBuffer();
     g_OLED.setCursor(0, g_lineHeight);
     g_OLED.printf("Connecting to WiFi...");

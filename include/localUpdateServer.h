@@ -12,14 +12,14 @@
 #include <strings.h>
 
 // externs
-extern String ssid;                  // WiFi ssid.
-extern String password;              // WiFi password.
-extern String hostName;              // hostname as seen on network.
-extern String softwareVersion;       // used for auto OTA updates & about page.
-extern String deviceFamily;          // used for auto OTA updates & about page.
-extern String description;           // used for about page.
-extern String globalIP;              // needed for about page.
-extern const String metaRedirect;    // needed for restart redirect.
+extern String ssid;               // WiFi ssid.
+extern String password;           // WiFi password.
+extern String hostName;           // hostname as seen on network.
+extern String softwareVersion;    // used for auto OTA updates & about page.
+extern String deviceFamily;       // used for auto OTA updates & about page.
+extern String description;        // used for about page.
+extern String globalIP;           // needed for about page.
+extern const String metaRedirect; // needed for restart redirect.
 extern const int activityLED;
 
 WebServer httpServer(80);
@@ -33,7 +33,7 @@ String getUpdateHTML();
 // Start the server
 void startUpdateServer()
 {
-    Serial.println("mDNS responder started");
+    Serial.println("mDNS responder started!");
 
     // handlers for url paths
     httpServer.on("/", HTTP_GET, []()
@@ -61,7 +61,6 @@ void startUpdateServer()
                 httpServer.sendHeader("Connection", "close");
                 httpServer.send(200, "text/html", "Option not allowed.");
             }
-            digitalWrite(LED_BUILTIN, LOW);
             bangLED(LOW);
         },
         []()
@@ -99,32 +98,48 @@ void startUpdateServer()
         });
     httpServer.begin();
     Serial.println("HTTP server started! Open your browser and go to http://" + globalIP + "/about");
+    Serial.println("or http://" + hostName + "/about");
 }
 
 // return the about page as HTML.
 void handleAbout()
 {
     bangLED(HIGH);
-    String aboutResponse;
-    aboutResponse.reserve(1024);
-    aboutResponse = "<body style=\"background-color:#3498db;color:#ffffff;font-family:arial\"><b>[About ESP32]</b><br><br>";
-    aboutResponse += "<b>Device Family:</b> " + deviceFamily + "<br>";
-    aboutResponse += "<b>ESP Chip Model:</b> " + String(ESP.getChipModel()) + "<br>";
-    aboutResponse += "<b>CPU Frequency:</b> " + String(ESP.getCpuFreqMHz()) + "<br>";
-    aboutResponse += "<b>Free Heap Mem:</b> " + String(ESP.getFreeHeap()) + "<br>";
-    aboutResponse += "<b>Flash Mem Size:</b> " + String(ESP.getFlashChipSize() / 1024 / 1024) + " MB<br>";
-    aboutResponse += "<b>Hostname:</b> " + hostName + "<br>";
-    aboutResponse += "<b>IPAddress:</b> " + globalIP + "<br>";
-    aboutResponse += "<b>MAC Address:</b> " + String(WiFi.macAddress()) + "<br>";
-    aboutResponse += "<b>Software Version:</b> " + softwareVersion + "<br>";
-    aboutResponse += "<b>SSID:</b> " + ssid + "<br>";
-    aboutResponse += "<b>Description:</b> " + description + "<br>";
-    aboutResponse += "<b>Uptime:</b> " + String(millis()/1000/60) + " minutes<br>";
-    aboutResponse += "<b>Update:</b> http://" + hostName + ".ra.local/update<br><br>";
-    aboutResponse += "<button onclick=\"window.location.href='/restart'\">Restart</button></body>";
-    aboutResponse += "&nbsp;&nbsp;<button onclick=\"window.location.href='/update'\">Update</button></body>";
-    httpServer.send(200, "text/html", aboutResponse);
+    String aboutResponse = "<head><style type=\"text/css\">.button:active{background-color:#cccccc;color:#111111}></style><head>"
+                           "<body style=\"background-color:#141d27;color:#dddddd;font-family:arial\"><b>[About ESP32]</b><br><br>"
+                           "<b>Device Family:</b> " +
+                           deviceFamily + "<br>"
+                                          "<b>ESP Chip Model:</b> " +
+                           String(ESP.getChipModel()) + "<br>"
+                                                        "<b>CPU Frequency:</b> " +
+                           String(ESP.getCpuFreqMHz()) + "<br>"
+                                                         "<b>Free Heap Mem:</b> " +
+                           String(ESP.getFreeHeap()) + "<br>"
+                                                       "<b>Flash Mem Size:</b> " +
+                           String(ESP.getFlashChipSize() / 1024 / 1024) + " MB<br>"
+                                                                          "<b>Hostname:</b> " +
+                           hostName + "<br>"
+                                      "<b>IPAddress:</b> " +
+                           globalIP + "<br>"
+                                      "<b>MAC Address:</b> " +
+                           String(WiFi.macAddress()) + "<br>"
+                                                       "<b>SSID: </b> " +
+                           ssid + "<br>"
+                                  "<b>RSSI: </b> " +
+                           String(WiFi.RSSI()) + " dB<br>"
+                                                 "<b>Software Version:</b> " +
+                           softwareVersion + "<br>"
+                                             "<b>Description:</b> " +
+                           description + "<br>"
+                                         "<b>Uptime:</b> " +
+                           zUtils::getMidTime() + "<br>"
+                                                  "<b>Update:</b> http://" +
+                           hostName + ".ra.local/update<br><br>"
+                                      "<button class=\"button\" style=\"width:100px;height:30px;border:0;background-color:#3c5168;color:#dddddd\" onclick=\"window.location.href='/restart'\">Restart</button></body>"
+                                      "&nbsp;&nbsp;<button class=\"button\" style=\"width:100px;height:30px;border:0;background-color:#3c5168;color:#dddddd\" onclick=\"window.location.href='/update'\">Update</button></body>";
+    
     httpServer.sendHeader("Connection", "close");
+    httpServer.send(200, "text/html", aboutResponse);
     bangLED(LOW);
 }
 

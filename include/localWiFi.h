@@ -24,9 +24,12 @@ extern String globalIP;               // needed for about page
 void startWifi()
 {
      // Connect to WiFi network
+     // .config() and .setHostName() should be before Wifi.begin(),
+     // or the network name will be set to esp32-arduino.local or similar.
     Serial.print("SSID: ");
     Serial.println(ssid);
-
+    WiFi.config(INADDR_NONE, INADDR_NONE, INADDR_NONE, INADDR_NONE);
+    WiFi.setHostname(hostName.c_str());
     WiFi.begin(ssid.c_str(), password.c_str());
     Serial.println("");
 
